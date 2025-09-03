@@ -10,12 +10,16 @@ RUN groupadd --gid 1000 "$SSH_USER" \
 
 WORKDIR "/home/$SSH_USER"
 
-# temporary fix for the Java + Docker + arm64 issue
-ENV _JAVA_OPTIONS=-XX:UseSVE=0
+# temporary fix for the Java + Docker + arm64 issue - only set on ARM64
+RUN if [ "$(uname -m)" = "aarch64" ]; then echo 'export _JAVA_OPTIONS=-XX:UseSVE=0' >> /etc/environment; fi
 
 # install OpenSSH server and generate host keys
+# hadolint ignore=DL3008
 RUN apt-get update \
-  && apt-get install openssh-server git openjdk-21-jdk -y \
+  && apt-get install --no-install-recommends -y \
+    openssh-server \
+    git \
+    openjdk-21-jdk \
   && mkdir -p /opt/ssh \
   && ssh-keygen -q -N "" -t rsa -b 4096 -f /opt/ssh/ssh_host_rsa_key \
   && chown -R "$SSH_USER":"$SSH_USER" /opt/ssh \
@@ -34,10 +38,12 @@ RUN git clone "$REPOSITORY"
 
 EXPOSE 2222
 
-RUN cat <<EOF > "/home/$SSH_USER/.bashrc"
-# temporary fix for the Java + Docker + arm64 issue
-export _JAVA_OPTIONS=-XX:UseSVE=0
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
-EOF
+RUN if [ "$(uname -m)" = "aarch64" ]; then \
+    echo "# temporary fix for the Java + Docker + arm64 issue" > "/home/$SSH_USER/.bashrc" && \
+    echo "export _JAVA_OPTIONS=-XX:UseSVE=0" >> "/home/$SSH_USER/.bashrc" && \
+    echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64" >> "/home/$SSH_USER/.bashrc"; \
+else \
+    echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" > "/home/$SSH_USER/.bashrc"; \
+fi
 
 ENTRYPOINT ["/usr/sbin/sshd", "-D", "-p", "2222", "-o", "HostKey=/opt/ssh/ssh_host_rsa_key", "-o", "PidFile=/opt/ssh/sshd.pid"]

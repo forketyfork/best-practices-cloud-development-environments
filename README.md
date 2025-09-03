@@ -1,6 +1,10 @@
 # Best Practices of Cloud Development Environments
 
-Source code for the talk.
+[![Build status](https://github.com/forketyfork/best-practices-cloud-development-environments/actions/workflows/build.yml/badge.svg)](https://github.com/forketyfork/best-practices-cloud-development-environments/actions/workflows/build.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/language-Docker-blue.svg)](https://www.docker.com/)
+
+Source code for the talk on best practices for cloud development environments.
 
 ## Building and running the dev-container
 
