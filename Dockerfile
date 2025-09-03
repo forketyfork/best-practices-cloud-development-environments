@@ -39,15 +39,11 @@ RUN git clone "$REPOSITORY"
 EXPOSE 2222
 
 RUN if [ "$(uname -m)" = "aarch64" ]; then \
-    cat <<EOF > "/home/$SSH_USER/.bashrc"
-# temporary fix for the Java + Docker + arm64 issue
-export _JAVA_OPTIONS=-XX:UseSVE=0
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
-EOF; \
+    echo "# temporary fix for the Java + Docker + arm64 issue" > "/home/$SSH_USER/.bashrc" && \
+    echo "export _JAVA_OPTIONS=-XX:UseSVE=0" >> "/home/$SSH_USER/.bashrc" && \
+    echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64" >> "/home/$SSH_USER/.bashrc"; \
 else \
-    cat <<EOF > "/home/$SSH_USER/.bashrc"
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-EOF; \
+    echo "export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" > "/home/$SSH_USER/.bashrc"; \
 fi
 
 ENTRYPOINT ["/usr/sbin/sshd", "-D", "-p", "2222", "-o", "HostKey=/opt/ssh/ssh_host_rsa_key", "-o", "PidFile=/opt/ssh/sshd.pid"]
