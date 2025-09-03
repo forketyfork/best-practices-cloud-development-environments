@@ -10,8 +10,8 @@ RUN groupadd --gid 1000 "$SSH_USER" \
 
 WORKDIR "/home/$SSH_USER"
 
-# temporary fix for the Java + Docker + arm64 issue
-ENV _JAVA_OPTIONS=-XX:UseSVE=0
+# temporary fix for the Java + Docker + arm64 issue - only set on ARM64
+RUN if [ "$(uname -m)" = "aarch64" ]; then echo 'export _JAVA_OPTIONS=-XX:UseSVE=0' >> /etc/environment; fi
 
 # install OpenSSH server and generate host keys
 # hadolint ignore=DL3008
@@ -38,10 +38,16 @@ RUN git clone "$REPOSITORY"
 
 EXPOSE 2222
 
-RUN cat <<EOF > "/home/$SSH_USER/.bashrc"
+RUN if [ "$(uname -m)" = "aarch64" ]; then \
+    cat <<EOF > "/home/$SSH_USER/.bashrc"
 # temporary fix for the Java + Docker + arm64 issue
 export _JAVA_OPTIONS=-XX:UseSVE=0
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
-EOF
+EOF; \
+else \
+    cat <<EOF > "/home/$SSH_USER/.bashrc"
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+EOF; \
+fi
 
 ENTRYPOINT ["/usr/sbin/sshd", "-D", "-p", "2222", "-o", "HostKey=/opt/ssh/ssh_host_rsa_key", "-o", "PidFile=/opt/ssh/sshd.pid"]
