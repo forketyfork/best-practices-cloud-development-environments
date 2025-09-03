@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Lint Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      run: |
+        docker build . -t best-practices-cloud-dev-environments \
+          --build-arg PUBLIC_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3..." \
+          --build-arg SSH_USER=testuser \
+          --build-arg REPOSITORY="https://github.com/spring-projects/spring-petclinic.git"
+      
+    - name: Test Docker image
+      run: |
+        # Start container in background
+        docker run -d -p 2222:2222 --name test-container best-practices-cloud-dev-environments
+        
+        # Wait a moment for SSH server to start
+        sleep 5
+        
+        # Check if SSH service is running on port 2222
+        docker exec test-container ss -tuln | grep :2222 || exit 1
+        
+        # Stop and remove container
+        docker stop test-container
+        docker rm test-container
