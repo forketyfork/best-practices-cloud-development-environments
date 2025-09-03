@@ -14,8 +14,12 @@ WORKDIR "/home/$SSH_USER"
 ENV _JAVA_OPTIONS=-XX:UseSVE=0
 
 # install OpenSSH server and generate host keys
+# hadolint ignore=DL3008
 RUN apt-get update \
-  && apt-get install openssh-server git openjdk-21-jdk -y \
+  && apt-get install --no-install-recommends -y \
+    openssh-server \
+    git \
+    openjdk-21-jdk \
   && mkdir -p /opt/ssh \
   && ssh-keygen -q -N "" -t rsa -b 4096 -f /opt/ssh/ssh_host_rsa_key \
   && chown -R "$SSH_USER":"$SSH_USER" /opt/ssh \
