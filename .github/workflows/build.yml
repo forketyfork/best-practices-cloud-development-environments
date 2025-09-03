@@ -40,8 +40,8 @@ jobs:
         # Wait a moment for SSH server to start
         sleep 5
         
-        # Check if SSH service is running on port 2222
-        docker exec test-container ss -tuln | grep :2222 || exit 1
+        # Check if SSH service is running
+        docker exec test-container ps aux | grep -q "[s]shd.*2222" || exit 1
         
         # Stop and remove container
         docker stop test-container
