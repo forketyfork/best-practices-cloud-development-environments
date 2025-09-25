@@ -1,12 +1,12 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG PUBLIC_KEY
 ARG SSH_USER
 ARG REPOSITORY
 
 # create a non-root user and group for SSH, adjust permissions for sshd to write login records
-RUN groupadd --gid 1000 "$SSH_USER" \
-    && useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash "$SSH_USER"
+RUN (groupadd --gid 1001 "$SSH_USER" || true) \
+    && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash "$SSH_USER"
 
 WORKDIR "/home/$SSH_USER"
 
