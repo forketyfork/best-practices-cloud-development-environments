@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ARG PUBLIC_KEY
 ARG SSH_USER
@@ -23,7 +23,7 @@ RUN apt-get update \
   && mkdir -p /opt/ssh \
   && ssh-keygen -q -N "" -t rsa -b 4096 -f /opt/ssh/ssh_host_rsa_key \
   && chown -R "$SSH_USER":"$SSH_USER" /opt/ssh \
-  && mkdir /run/sshd \
+  && mkdir -p /run/sshd \
   && rm -rf /var/lib/apt/lists/*
 
 # set permissions and write public key to authorized_keys
